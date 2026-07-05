@@ -22,7 +22,11 @@ import { BillingSettings } from '@/features/system-settings/billing'
 import {
   BILLING_DEFAULT_SECTION,
   BILLING_SECTION_IDS,
+  getBillingSectionMeta,
+  type BillingSectionId,
 } from '@/features/system-settings/billing/section-registry.tsx'
+import { ROLE } from '@/lib/roles'
+import { useAuthStore } from '@/stores/auth-store'
 
 export const Route = createFileRoute(
   '/_authenticated/system-settings/billing/$section'
@@ -34,6 +38,13 @@ export const Route = createFileRoute(
         to: '/system-settings/billing/$section',
         params: { section: BILLING_DEFAULT_SECTION },
       })
+    }
+
+    const { auth } = useAuthStore.getState()
+    const isRoot = (auth.user?.role ?? 0) >= ROLE.SUPER_ADMIN
+    const section = getBillingSectionMeta(params.section as BillingSectionId)
+    if (!isRoot && section.rootOnly) {
+      throw redirect({ to: '/403' })
     }
   },
   component: BillingSettings,

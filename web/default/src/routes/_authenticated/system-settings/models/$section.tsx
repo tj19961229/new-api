@@ -22,7 +22,11 @@ import { ModelSettings } from '@/features/system-settings/models'
 import {
   MODELS_DEFAULT_SECTION,
   MODELS_SECTION_IDS,
+  getModelsSectionMeta,
+  type ModelSectionId,
 } from '@/features/system-settings/models/section-registry.tsx'
+import { ROLE } from '@/lib/roles'
+import { useAuthStore } from '@/stores/auth-store'
 
 export const Route = createFileRoute(
   '/_authenticated/system-settings/models/$section'
@@ -34,6 +38,13 @@ export const Route = createFileRoute(
         to: '/system-settings/models/$section',
         params: { section: MODELS_DEFAULT_SECTION },
       })
+    }
+
+    const { auth } = useAuthStore.getState()
+    const isRoot = (auth.user?.role ?? 0) >= ROLE.SUPER_ADMIN
+    const section = getModelsSectionMeta(params.section as ModelSectionId)
+    if (!isRoot && section.rootOnly) {
+      throw redirect({ to: '/403' })
     }
   },
   component: ModelSettings,

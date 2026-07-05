@@ -1070,6 +1070,12 @@ func ManageUser(c *gin.Context) {
 		}
 		user.Role = common.RoleCommonUser
 	case "add_quota":
+		// 收款与免费额度的安全边界:凭空加/减/覆盖用户额度只允许 root。
+		// 受限 admin(分站销售经理)可 enable/disable/delete 用户,但不能造额度。
+		if myRole < common.RoleRootUser {
+			common.ApiErrorI18n(c, i18n.MsgAuthInsufficientPrivilege)
+			return
+		}
 		switch req.Mode {
 		case "add":
 			if req.Value <= 0 {

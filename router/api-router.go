@@ -129,7 +129,6 @@ func SetApiRouter(router *gin.Engine) {
 			{
 				adminRoute.GET("/", controller.GetAllUsers)
 				adminRoute.GET("/topup", controller.GetAllTopUps)
-				adminRoute.POST("/topup/complete", controller.AdminCompleteTopUp)
 				adminRoute.GET("/search", controller.SearchUsers)
 				adminRoute.GET("/:id/oauth/bindings", controller.GetUserOAuthBindingsByAdmin)
 				adminRoute.DELETE("/:id/oauth/bindings/:provider_id", controller.UnbindCustomOAuthByAdmin)
@@ -144,6 +143,13 @@ func SetApiRouter(router *gin.Engine) {
 				// Admin 2FA routes
 				adminRoute.GET("/2fa/stats", controller.Admin2FAStats)
 				adminRoute.DELETE("/:id/2fa", controller.AdminDisable2FA)
+			}
+
+			// 手动补单(完成挂起充值订单→给用户加额度)属造额度操作,仅 root。
+			userRootRoute := userRoute.Group("/")
+			userRootRoute.Use(middleware.RootAuth())
+			{
+				userRootRoute.POST("/topup/complete", controller.AdminCompleteTopUp)
 			}
 		}
 
@@ -160,8 +166,9 @@ func SetApiRouter(router *gin.Engine) {
 			subscriptionRoute.POST("/creem/pay", middleware.CriticalRateLimit(), controller.SubscriptionRequestCreemPay)
 			subscriptionRoute.POST("/waffo-pancake/pay", middleware.CriticalRateLimit(), controller.SubscriptionRequestWaffoPancakePay)
 		}
+		// 订阅后台管理含"不收款直接授予额度"(bind)等造额度操作,整组仅 root。
 		subscriptionAdminRoute := apiRouter.Group("/subscription/admin")
-		subscriptionAdminRoute.Use(middleware.AdminAuth())
+		subscriptionAdminRoute.Use(middleware.RootAuth())
 		{
 			subscriptionAdminRoute.GET("/plans", controller.AdminListSubscriptionPlans)
 			subscriptionAdminRoute.POST("/plans", controller.AdminCreateSubscriptionPlan)
@@ -181,21 +188,29 @@ func SetApiRouter(router *gin.Engine) {
 		apiRouter.GET("/subscription/epay/notify", controller.SubscriptionEpayNotify)
 		apiRouter.GET("/subscription/epay/return", controller.SubscriptionEpayReturn)
 		apiRouter.POST("/subscription/epay/return", anonymousRequestBodyLimit, controller.SubscriptionEpayReturn)
-		optionRoute := apiRouter.Group("/option")
-		optionRoute.Use(middleware.RootAuth())
+		// 受限 admin 可读写系统配置:GET/PUT 内部按 key 白名单强制(支付/密钥/免费额度
+		// /安全防护一律拒绝,见 controller/option_admin_keys.go);定价重置与渠道亲和缓存
+		// 属运营,一并开放给 admin。
+		optionAdminRoute := apiRouter.Group("/option")
+		optionAdminRoute.Use(middleware.AdminAuth())
 		{
-			optionRoute.GET("/", controller.GetOptions)
-			optionRoute.PUT("/", controller.UpdateOption)
-			optionRoute.POST("/payment_compliance", controller.ConfirmPaymentCompliance)
-			optionRoute.GET("/channel_affinity_cache", controller.GetChannelAffinityCacheStats)
-			optionRoute.DELETE("/channel_affinity_cache", controller.ClearChannelAffinityCache)
-			optionRoute.POST("/rest_model_ratio", controller.ResetModelRatio)
-			optionRoute.POST("/migrate_console_setting", controller.MigrateConsoleSetting) // 用于迁移检测的旧键，下个版本会删除
-			optionRoute.GET("/waffo-pancake/catalog", controller.ListWaffoPancakeCatalog)
-			optionRoute.POST("/waffo-pancake/pair", controller.CreateWaffoPancakePair)
-			optionRoute.POST("/waffo-pancake/save", controller.SaveWaffoPancake)
-			optionRoute.POST("/waffo-pancake/subscription-product", controller.CreateWaffoPancakeSubscriptionProduct)
-			optionRoute.GET("/waffo-pancake/subscription-product-options", controller.ListWaffoPancakeSubscriptionProductOptions)
+			optionAdminRoute.GET("/", controller.GetOptions)
+			optionAdminRoute.PUT("/", controller.UpdateOption)
+			optionAdminRoute.POST("/rest_model_ratio", controller.ResetModelRatio)
+			optionAdminRoute.GET("/channel_affinity_cache", controller.GetChannelAffinityCacheStats)
+			optionAdminRoute.DELETE("/channel_affinity_cache", controller.ClearChannelAffinityCache)
+		}
+		// 支付合规确认、Waffo-Pancake 供给、旧键迁移属收款/系统级操作,仍限 root。
+		optionRootRoute := apiRouter.Group("/option")
+		optionRootRoute.Use(middleware.RootAuth())
+		{
+			optionRootRoute.POST("/payment_compliance", controller.ConfirmPaymentCompliance)
+			optionRootRoute.POST("/migrate_console_setting", controller.MigrateConsoleSetting) // 用于迁移检测的旧键，下个版本会删除
+			optionRootRoute.GET("/waffo-pancake/catalog", controller.ListWaffoPancakeCatalog)
+			optionRootRoute.POST("/waffo-pancake/pair", controller.CreateWaffoPancakePair)
+			optionRootRoute.POST("/waffo-pancake/save", controller.SaveWaffoPancake)
+			optionRootRoute.POST("/waffo-pancake/subscription-product", controller.CreateWaffoPancakeSubscriptionProduct)
+			optionRootRoute.GET("/waffo-pancake/subscription-product-options", controller.ListWaffoPancakeSubscriptionProductOptions)
 		}
 
 		// Custom OAuth provider management (root only)
@@ -251,8 +266,9 @@ func SetApiRouter(router *gin.Engine) {
 			}
 		}
 
+		// 兑换码 = 发放额度凭证(造额度),整组仅 root。
 		redemptionRoute := apiRouter.Group("/redemption")
-		redemptionRoute.Use(middleware.AdminAuth())
+		redemptionRoute.Use(middleware.RootAuth())
 		{
 			redemptionRoute.GET("/", controller.GetAllRedemptions)
 			redemptionRoute.GET("/search", controller.SearchRedemptions)

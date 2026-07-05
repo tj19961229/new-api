@@ -138,11 +138,13 @@ export function useSidebarData(): SidebarData {
             title: t('Redemption Codes'),
             url: '/redemption-codes',
             icon: Ticket,
+            requiredRole: ROLE.SUPER_ADMIN,
           },
           {
             title: t('Subscriptions'),
             url: '/subscriptions',
             icon: CreditCard,
+            requiredRole: ROLE.SUPER_ADMIN,
           },
           {
             title: t('System Info'),

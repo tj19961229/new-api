@@ -27,6 +27,7 @@ const SECURITY_SECTIONS = [
   {
     id: 'rate-limit',
     titleKey: 'Rate Limiting',
+    rootOnly: true,
     build: (settings: SecuritySettings) => (
       <RateLimitSection
         defaultValues={{
@@ -44,6 +45,7 @@ const SECURITY_SECTIONS = [
   {
     id: 'sensitive-words',
     titleKey: 'Sensitive Words',
+    rootOnly: true,
     build: (settings: SecuritySettings) => (
       <SensitiveWordsSection
         defaultValues={{
@@ -57,6 +59,7 @@ const SECURITY_SECTIONS = [
   {
     id: 'ssrf',
     titleKey: 'SSRF Protection',
+    rootOnly: true,
     build: (settings: SecuritySettings) => (
       <SSRFSection
         defaultValues={{
@@ -81,6 +84,7 @@ const SECURITY_SECTIONS = [
   {
     id: 'token-limits',
     titleKey: 'Token Limits',
+    rootOnly: true,
     build: (settings: SecuritySettings) => (
       <TokenLimitSection
         defaultValues={{

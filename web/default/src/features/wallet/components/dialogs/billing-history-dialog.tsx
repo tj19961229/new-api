@@ -44,6 +44,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useIsRoot } from '@/hooks/use-admin'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { formatCurrencyFromUSD } from '@/lib/currency'
 import { formatNumber } from '@/lib/format'
@@ -82,6 +83,8 @@ export function BillingHistoryDialog({
 
   const [confirmTradeNo, setConfirmTradeNo] = useState<string | null>(null)
   const { copyToClipboard, copiedText } = useCopyToClipboard({ notify: false })
+  // Manually completing an order credits the user's quota — restricted to root.
+  const isRoot = useIsRoot()
 
   const totalPages = Math.ceil(total / pageSize)
 
@@ -259,7 +262,7 @@ export function BillingHistoryDialog({
                       </div>
 
                       {/* Admin Actions */}
-                      {isAdmin && record.status === 'pending' && (
+                      {isRoot && record.status === 'pending' && (
                         <div className='mt-4 flex justify-end'>
                           <Button
                             size='sm'

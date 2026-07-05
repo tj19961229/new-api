@@ -29,3 +29,12 @@ export function useIsAdmin(): boolean {
   const { user } = useAuthStore((state) => state.auth)
   return (user?.role ?? 0) >= ROLE.ADMIN
 }
+
+/**
+ * Check if current user is a root (super admin) — the subsite owner.
+ * Restricted admins (role >= ADMIN but < SUPER_ADMIN) return false.
+ */
+export function useIsRoot(): boolean {
+  const { user } = useAuthStore((state) => state.auth)
+  return (user?.role ?? 0) >= ROLE.SUPER_ADMIN
+}

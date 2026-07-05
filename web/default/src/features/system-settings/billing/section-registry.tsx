@@ -55,6 +55,7 @@ const BILLING_SECTIONS = [
   {
     id: 'quota',
     titleKey: 'Quota Settings',
+    rootOnly: true,
     build: (settings: BillingSettings) => (
       <QuotaSettingsSection
         defaultValues={{
@@ -130,6 +131,7 @@ const BILLING_SECTIONS = [
   {
     id: 'payment',
     titleKey: 'Payment Gateway',
+    rootOnly: true,
     build: (settings: BillingSettings) => (
       <PaymentSettingsSection
         defaultValues={{
@@ -190,6 +192,7 @@ const BILLING_SECTIONS = [
   {
     id: 'checkin',
     titleKey: 'Check-in Rewards',
+    rootOnly: true,
     build: (settings: BillingSettings) => (
       <CheckinSettingsSection
         defaultValues={{

@@ -22,7 +22,11 @@ import { OperationsSettings } from '@/features/system-settings/operations'
 import {
   OPERATIONS_DEFAULT_SECTION,
   OPERATIONS_SECTION_IDS,
+  getOperationsSectionMeta,
+  type OperationsSectionId,
 } from '@/features/system-settings/operations/section-registry.tsx'
+import { ROLE } from '@/lib/roles'
+import { useAuthStore } from '@/stores/auth-store'
 
 export const Route = createFileRoute(
   '/_authenticated/system-settings/operations/$section'
@@ -41,6 +45,15 @@ export const Route = createFileRoute(
         to: '/system-settings/operations/$section',
         params: { section: OPERATIONS_DEFAULT_SECTION },
       })
+    }
+
+    const { auth } = useAuthStore.getState()
+    const isRoot = (auth.user?.role ?? 0) >= ROLE.SUPER_ADMIN
+    const section = getOperationsSectionMeta(
+      params.section as OperationsSectionId
+    )
+    if (!isRoot && section.rootOnly) {
+      throw redirect({ to: '/403' })
     }
   },
   component: OperationsSettings,

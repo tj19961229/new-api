@@ -26,7 +26,9 @@ export const Route = createFileRoute('/_authenticated/system-settings')({
   beforeLoad: () => {
     const { auth } = useAuthStore.getState()
 
-    if (auth.user?.role !== ROLE.SUPER_ADMIN) {
+    // Restricted admins (role >= ADMIN) may enter; per-section root-only
+    // guards live in each group's `$section` route. Non-admins are blocked.
+    if (!auth.user || auth.user.role < ROLE.ADMIN) {
       throw redirect({
         to: '/403',
       })

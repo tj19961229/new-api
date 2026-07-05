@@ -76,6 +76,9 @@ func buildCompletionRatioMetaValue(optionValues map[string]string) string {
 }
 
 func GetOptions(c *gin.Context) {
+	// 非 root 的受限 admin 只允许读取白名单内的配置项(支付/密钥/OAuth/免费额度/
+	// 安全防护类一律不下发),与 UpdateOption 的写白名单保持一致。
+	isRoot := c.GetInt("role") >= common.RoleRootUser
 	var options []*model.Option
 	optionValues := make(map[string]string)
 	common.OptionMapRWMutex.Lock()
@@ -87,6 +90,9 @@ func GetOptions(c *gin.Context) {
 			strings.HasSuffix(k, "secret") ||
 			strings.HasSuffix(k, "api_key")
 		if isSensitiveKey {
+			continue
+		}
+		if !isRoot && !IsAdminWritableOption(k) {
 			continue
 		}
 		options = append(options, &model.Option{
@@ -136,6 +142,13 @@ func UpdateOption(c *gin.Context) {
 		option.Value = common.Interface2String(option.Value.(int))
 	default:
 		option.Value = fmt.Sprintf("%v", option.Value)
+	}
+	// 收款与免费额度的安全边界:非 root 的受限 admin 只能写白名单内的配置项
+	// (定价/倍率/站点门面/运营开关),支付网关、OAuth 密钥、SMTP/Worker、
+	// 赠额/造额度、安全防护策略等一律拒绝。default-deny,见 option_admin_keys.go。
+	if c.GetInt("role") < common.RoleRootUser && !IsAdminWritableOption(option.Key) {
+		common.ApiErrorMsg(c, "无权修改该系统配置项")
+		return
 	}
 	switch option.Key {
 	case "QuotaForInviter", "QuotaForInvitee":
