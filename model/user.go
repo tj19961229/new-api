@@ -144,14 +144,15 @@ func generateDefaultSidebarConfigForRole(userRole int) string {
 
 	// 管理员区域 - 根据角色决定
 	if userRole == common.RoleAdminUser {
-		// 管理员可以访问管理员区域，但不能访问系统设置
+		// 分站受限 admin 需要进入系统设置管理定价/模型/站点;支付/OAuth/安全等
+		// root-only 分区由前端 section 过滤 + 后端 option key 白名单挡住(Path B)。
 		defaultConfig["admin"] = map[string]interface{}{
 			"enabled":    true,
 			"channel":    true,
 			"models":     true,
 			"redemption": true,
 			"user":       true,
-			"setting":    false, // 管理员不能访问系统设置
+			"setting":    true,
 		}
 	} else if userRole == common.RoleRootUser {
 		// 超级管理员可以访问所有功能
