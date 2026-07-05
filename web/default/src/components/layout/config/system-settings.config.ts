@@ -35,7 +35,7 @@ import { getOperationsSectionNavItems } from '@/features/system-settings/operati
 import { getSecuritySectionNavItems } from '@/features/system-settings/security/section-registry.tsx'
 import { getSiteSectionNavItems } from '@/features/system-settings/site/section-registry.tsx'
 
-import type { NavGroup, SidebarView } from '../types'
+import type { NavGroup, NavItem, SidebarView } from '../types'
 
 /**
  * Sidebar nav groups for the System Settings nested view.
@@ -44,48 +44,57 @@ import type { NavGroup, SidebarView } from '../types'
  * header already provides top-level context — the inner group label
  * scopes the items as "administration" actions.
  */
-function getSystemSettingsNavGroups(t: TFunction): NavGroup[] {
+function getSystemSettingsNavGroups(
+  t: TFunction,
+  isRoot = true
+): NavGroup[] {
+  const items: NavItem[] = [
+    {
+      title: t('Site & Branding'),
+      icon: Settings,
+      items: getSiteSectionNavItems(t, isRoot),
+    },
+    {
+      title: t('Authentication'),
+      icon: Shield,
+      items: getAuthSectionNavItems(t, isRoot),
+    },
+    {
+      title: t('Billing & Payment'),
+      icon: CreditCard,
+      items: getBillingSectionNavItems(t, isRoot),
+    },
+    {
+      title: t('Models & Routing'),
+      icon: Box,
+      items: getModelsSectionNavItems(t, isRoot),
+    },
+    {
+      title: t('Security & Limits'),
+      icon: ShieldAlert,
+      items: getSecuritySectionNavItems(t, isRoot),
+    },
+    {
+      title: t('Console Content'),
+      icon: Layout,
+      items: getContentSectionNavItems(t, isRoot),
+    },
+    {
+      title: t('Operations'),
+      icon: Wrench,
+      items: getOperationsSectionNavItems(t, isRoot),
+    },
+  ]
+
   return [
     {
       id: 'system-administration',
       title: t('System Administration'),
-      items: [
-        {
-          title: t('Site & Branding'),
-          icon: Settings,
-          items: getSiteSectionNavItems(t),
-        },
-        {
-          title: t('Authentication'),
-          icon: Shield,
-          items: getAuthSectionNavItems(t),
-        },
-        {
-          title: t('Billing & Payment'),
-          icon: CreditCard,
-          items: getBillingSectionNavItems(t),
-        },
-        {
-          title: t('Models & Routing'),
-          icon: Box,
-          items: getModelsSectionNavItems(t),
-        },
-        {
-          title: t('Security & Limits'),
-          icon: ShieldAlert,
-          items: getSecuritySectionNavItems(t),
-        },
-        {
-          title: t('Console Content'),
-          icon: Layout,
-          items: getContentSectionNavItems(t),
-        },
-        {
-          title: t('Operations'),
-          icon: Wrench,
-          items: getOperationsSectionNavItems(t),
-        },
-      ],
+      // Drop groups whose sections are all root-only (e.g. Authentication,
+      // Security & Limits are hidden entirely for restricted admins).
+      items: items.filter(
+        (item) => 'items' in item && (item.items?.length ?? 0) > 0
+      ),
     },
   ]
 }

@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/command'
 import { useSearch } from '@/context/search-provider'
 import { useTheme } from '@/context/theme-provider'
+import { useIsRoot } from '@/hooks/use-admin'
 import { useSidebarData } from '@/hooks/use-sidebar-data'
 
 import { getNavGroupsForPath } from './layout/lib/sidebar-view-registry'
@@ -45,10 +46,12 @@ export function CommandMenu() {
   const { open, setOpen } = useSearch()
   const { pathname } = useLocation()
   const sidebarData = useSidebarData()
+  const isRoot = useIsRoot()
 
   // Use the active nested sidebar view's nav groups when one matches
   // the current URL; otherwise fall back to the root navigation.
-  const navGroups = getNavGroupsForPath(pathname, t) ?? sidebarData.navGroups
+  const navGroups =
+    getNavGroupsForPath(pathname, t, isRoot) ?? sidebarData.navGroups
 
   const runCommand = React.useCallback(
     (command: () => unknown) => {

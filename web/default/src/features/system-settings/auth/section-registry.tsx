@@ -28,6 +28,7 @@ const AUTH_SECTIONS = [
   {
     id: 'basic-auth',
     titleKey: 'Basic Authentication',
+    rootOnly: true,
     build: (settings: AuthSettings) => (
       <BasicAuthSection
         defaultValues={{
@@ -45,6 +46,7 @@ const AUTH_SECTIONS = [
   {
     id: 'oauth',
     titleKey: 'OAuth Integrations',
+    rootOnly: true,
     build: (settings: AuthSettings) => (
       <OAuthSection
         defaultValues={{
@@ -80,6 +82,7 @@ const AUTH_SECTIONS = [
   {
     id: 'passkey',
     titleKey: 'Passkey Authentication',
+    rootOnly: true,
     build: (settings: AuthSettings) => (
       <PasskeySection
         defaultValues={{
@@ -102,6 +105,7 @@ const AUTH_SECTIONS = [
   {
     id: 'bot-protection',
     titleKey: 'Bot Protection',
+    rootOnly: true,
     build: (settings: AuthSettings) => (
       <BotProtectionSection
         defaultValues={{
@@ -115,6 +119,7 @@ const AUTH_SECTIONS = [
   {
     id: 'custom-oauth',
     titleKey: 'Custom OAuth',
+    rootOnly: true,
     build: () => <CustomOAuthSection />,
   },
 ] as const

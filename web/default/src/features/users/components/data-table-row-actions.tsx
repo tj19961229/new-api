@@ -47,6 +47,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { UserSubscriptionsDialog } from '@/features/subscriptions/components/dialogs/user-subscriptions-dialog'
+import { useIsRoot } from '@/hooks/use-admin'
 
 import { manageUser, resetUserPasskey, resetUserTwoFA } from '../api'
 import {
@@ -67,6 +68,8 @@ interface DataTableRowActionsProps {
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { t } = useTranslation()
   const user = row.original
+  // Admin binding of user subscriptions creates quota — restricted to root.
+  const currentUserIsRoot = useIsRoot()
   const { setOpen, setCurrentRow, triggerRefresh } = useUsers()
   const [resetPasskeyOpen, setResetPasskeyOpen] = useState(false)
   const [resetTwoFAOpen, setResetTwoFAOpen] = useState(false)
@@ -210,17 +213,19 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           </DropdownMenuShortcut>
         </DropdownMenuItem>
 
-        <DropdownMenuItem
-          onSelect={(event) => {
-            event.preventDefault()
-            setSubscriptionsDialogOpen(true)
-          }}
-        >
-          {t('Manage Subscriptions')}
-          <DropdownMenuShortcut>
-            <CreditCard size={16} />
-          </DropdownMenuShortcut>
-        </DropdownMenuItem>
+        {currentUserIsRoot && (
+          <DropdownMenuItem
+            onSelect={(event) => {
+              event.preventDefault()
+              setSubscriptionsDialogOpen(true)
+            }}
+          >
+            {t('Manage Subscriptions')}
+            <DropdownMenuShortcut>
+              <CreditCard size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+        )}
 
         <DropdownMenuSeparator />
 

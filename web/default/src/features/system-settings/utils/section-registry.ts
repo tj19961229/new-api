@@ -26,6 +26,12 @@ export type SectionDefinition<TSettings, TExtraArgs extends unknown[] = []> = {
   id: string
   titleKey: string
   build: (settings: TSettings, ...extraArgs: TExtraArgs) => ReactNode
+  /**
+   * When true, the section is only visible to root (super admin). Restricted
+   * admins have it hidden from the sidebar (see `getSectionNavItems`) and
+   * blocked by route guards (see `isSectionRootOnly`).
+   */
+  rootOnly?: boolean
 }
 
 /**
@@ -61,16 +67,27 @@ export function createSectionRegistry<
   ]
 
   /**
-   * Get navigation items for sidebar
+   * Get navigation items for sidebar. When `isRoot` is false, sections marked
+   * `rootOnly` are filtered out so restricted admins never see them.
    */
-  function getSectionNavItems(t: TFunction) {
-    return sections.map((section) => ({
-      title: t(section.titleKey),
-      url:
-        urlStyle === 'path'
-          ? `${basePath}/${section.id}`
-          : `${basePath}?section=${section.id}`,
-    }))
+  function getSectionNavItems(t: TFunction, isRoot = true) {
+    return sections
+      .filter((section) => isRoot || !section.rootOnly)
+      .map((section) => ({
+        title: t(section.titleKey),
+        url:
+          urlStyle === 'path'
+            ? `${basePath}/${section.id}`
+            : `${basePath}?section=${section.id}`,
+      }))
+  }
+
+  /**
+   * Whether a section id is restricted to root (super admin). Unknown ids
+   * resolve to the default section (not root-only) via `getSectionMeta`.
+   */
+  function isSectionRootOnly(sectionId: string): boolean {
+    return Boolean(getSectionMeta(sectionId as SectionId).rootOnly)
   }
 
   /**
@@ -96,5 +113,6 @@ export function createSectionRegistry<
     getSectionNavItems,
     getSectionContent,
     getSectionMeta,
+    isSectionRootOnly,
   }
 }

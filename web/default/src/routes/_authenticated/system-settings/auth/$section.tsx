@@ -23,11 +23,18 @@ import {
   AUTH_DEFAULT_SECTION,
   AUTH_SECTION_IDS,
 } from '@/features/system-settings/auth/section-registry.tsx'
+import { ROLE } from '@/lib/roles'
+import { useAuthStore } from '@/stores/auth-store'
 
 export const Route = createFileRoute(
   '/_authenticated/system-settings/auth/$section'
 )({
   beforeLoad: ({ params }) => {
+    const { auth } = useAuthStore.getState()
+    if (!auth.user || auth.user.role < ROLE.SUPER_ADMIN) {
+      throw redirect({ to: '/403' })
+    }
+
     const validSections = AUTH_SECTION_IDS as unknown as string[]
     if (!validSections.includes(params.section)) {
       throw redirect({

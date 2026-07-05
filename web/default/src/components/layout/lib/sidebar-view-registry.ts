@@ -52,8 +52,9 @@ export function resolveSidebarView(pathname: string): SidebarView | null {
  */
 export function getNavGroupsForPath(
   pathname: string,
-  t: TFunction
+  t: TFunction,
+  isRoot = true
 ): NavGroup[] | null {
   const view = resolveSidebarView(pathname)
-  return view ? view.getNavGroups(t) : null
+  return view ? view.getNavGroups(t, isRoot) : null
 }

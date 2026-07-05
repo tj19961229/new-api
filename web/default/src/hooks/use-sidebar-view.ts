@@ -67,10 +67,11 @@ export function useSidebarView(): ResolvedSidebarView {
   const view = resolveSidebarView(pathname)
 
   if (view) {
+    const isRoot = (userRole ?? ROLE.GUEST) >= ROLE.SUPER_ADMIN
     return {
       key: view.id,
       view,
-      navGroups: view.getNavGroups(t),
+      navGroups: view.getNavGroups(t, isRoot),
     }
   }
 

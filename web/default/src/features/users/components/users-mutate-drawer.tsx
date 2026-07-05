@@ -154,6 +154,8 @@ export function UsersMutateDrawer({
   const currentQuotaRaw = form.watch('quota_dollars') || 0
   const selectedRole = form.watch('role')
   const canEditAdminPermissions = currentUser?.role === ROLE.SUPER_ADMIN
+  // Adjusting a user's quota mints quota — restricted to root (super admin).
+  const isRoot = (currentUser?.role ?? 0) >= ROLE.SUPER_ADMIN
   const targetIsAdmin = (selectedRole ?? currentRow?.role ?? 0) >= ROLE.ADMIN
 
   const onSubmit = async (data: UserFormValues) => {
@@ -411,14 +413,16 @@ export function UsersMutateDrawer({
                               className='flex-1'
                             />
                           </FormControl>
-                          <Button
-                            type='button'
-                            variant='outline'
-                            onClick={() => setQuotaDialogOpen(true)}
-                          >
-                            <Pencil className='mr-1 h-4 w-4' />
-                            {t('Adjust Quota')}
-                          </Button>
+                          {isRoot && (
+                            <Button
+                              type='button'
+                              variant='outline'
+                              onClick={() => setQuotaDialogOpen(true)}
+                            >
+                              <Pencil className='mr-1 h-4 w-4' />
+                              {t('Adjust Quota')}
+                            </Button>
+                          )}
                         </div>
                         <FormDescription>
                           {formatQuota(parseQuotaFromDollars(field.value || 0))}

@@ -124,8 +124,12 @@ export type SidebarView = {
   pathPattern: RegExp
   /** Back-navigation descriptor; required for nested views */
   parent: SidebarViewParent
-  /** Nav group builder, called per render with the active translator */
-  getNavGroups: (t: TFunction) => NavGroup[]
+  /**
+   * Nav group builder, called per render with the active translator and
+   * whether the current user is root. Non-root (restricted admin) callers
+   * receive a narrowed set of groups/sections.
+   */
+  getNavGroups: (t: TFunction, isRoot: boolean) => NavGroup[]
 }
 
 /**
