@@ -29,6 +29,8 @@ import {
 } from '@/components/ui/select'
 import { CompactDateTimeRangePicker } from '@/features/usage-logs/components/compact-date-time-range-picker'
 
+import { topUpStatusValues, type TopUpStatus } from '../types'
+
 const STATUS_OPTIONS = [
   { value: 'success', labelKey: 'Success' },
   { value: 'pending', labelKey: 'Pending' },
@@ -38,13 +40,19 @@ const STATUS_OPTIONS = [
 
 const ALL_STATUS_VALUE = '__all__'
 
+const topUpStatusValueSet = new Set<string>(topUpStatusValues)
+
+function isTopUpStatusValue(value: string | null): value is TopUpStatus {
+  return value !== null && topUpStatusValueSet.has(value)
+}
+
 export interface TopUpStatsFilterBarProps {
   keyword: string
   onKeywordChange: (value: string) => void
   username: string
   onUsernameChange: (value: string) => void
-  status?: string
-  onStatusChange: (value?: string) => void
+  status?: TopUpStatus
+  onStatusChange: (value?: TopUpStatus) => void
   startTime?: Date
   endTime?: Date
   onDateRangeChange: (range: { start?: Date; end?: Date }) => void
@@ -82,9 +90,7 @@ export function TopUpStatsFilterBar(props: TopUpStatsFilterBarProps) {
       <Select
         value={props.status ?? ALL_STATUS_VALUE}
         onValueChange={(value) =>
-          props.onStatusChange(
-            value === ALL_STATUS_VALUE ? undefined : (value ?? undefined)
-          )
+          props.onStatusChange(isTopUpStatusValue(value) ? value : undefined)
         }
       >
         <SelectTrigger className='h-8 w-32 text-sm'>
