@@ -103,3 +103,50 @@ func SearchAllTopUpsWithFilters(filters TopUpFilters, pageInfo *common.PageInfo)
 	}
 	return topups, total, nil
 }
+
+// TopUpStats 是一组充值记录的聚合统计口径。
+type TopUpStats struct {
+	TotalCount   int64   `json:"total_count"`
+	SuccessCount int64   `json:"success_count"`
+	TotalMoney   float64 `json:"total_money"`
+	TotalAmount  int64   `json:"total_amount"`
+}
+
+// GetTopUpStats 按 filters 聚合统计。TotalMoney/TotalAmount 只计入 success 状态的订单，
+// TotalCount 计入所有匹配 filters 的订单（不限状态）。
+func GetTopUpStats(filters TopUpFilters) (TopUpStats, error) {
+	var stats TopUpStats
+
+	totalQuery, err := applyTopUpFilters(DB.Model(&TopUp{}), filters)
+	if err != nil {
+		return TopUpStats{}, err
+	}
+	if err = totalQuery.Count(&stats.TotalCount).Error; err != nil {
+		common.SysError("failed to count topups for stats: " + err.Error())
+		return TopUpStats{}, errors.New("统计充值记录失败")
+	}
+
+	successQuery, err := applyTopUpFilters(DB.Model(&TopUp{}), filters)
+	if err != nil {
+		return TopUpStats{}, err
+	}
+	successQuery = successQuery.Where("status = ?", common.TopUpStatusSuccess)
+
+	var successAgg struct {
+		SuccessCount int64
+		TotalMoney   float64
+		TotalAmount  int64
+	}
+	err = successQuery.Select(
+		"COUNT(*) AS success_count, COALESCE(SUM(money),0) AS total_money, COALESCE(SUM(amount),0) AS total_amount",
+	).Scan(&successAgg).Error
+	if err != nil {
+		common.SysError("failed to aggregate successful topups for stats: " + err.Error())
+		return TopUpStats{}, errors.New("统计充值记录失败")
+	}
+
+	stats.SuccessCount = successAgg.SuccessCount
+	stats.TotalMoney = successAgg.TotalMoney
+	stats.TotalAmount = successAgg.TotalAmount
+	return stats, nil
+}

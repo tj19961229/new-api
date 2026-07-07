@@ -123,3 +123,73 @@ func TestSearchAllTopUpsWithFiltersPaginates(t *testing.T) {
 	assert.Equal(t, "TP3", rows[0].TradeNo)
 	assert.Equal(t, "TP2", rows[1].TradeNo)
 }
+
+func TestGetTopUpStats(t *testing.T) {
+	truncateTables(t)
+	require.NoError(t, DB.Exec("DELETE FROM top_ups").Error)
+	require.NoError(t, DB.Exec("DELETE FROM users").Error)
+
+	users := []User{
+		{Id: 9201, Username: "topupstats_alice", Password: "x", AffCode: "ts2a01"},
+		{Id: 9202, Username: "topupstats_bob", Password: "x", AffCode: "ts2b01"},
+	}
+	require.NoError(t, DB.Create(&users).Error)
+
+	topups := []TopUp{
+		{UserId: 9201, Amount: 100, Money: 10, TradeNo: "TS1", Status: common.TopUpStatusSuccess, CreateTime: 1000},
+		{UserId: 9201, Amount: 200, Money: 20, TradeNo: "TS2", Status: common.TopUpStatusPending, CreateTime: 2000},
+		{UserId: 9202, Amount: 300, Money: 30, TradeNo: "TS3", Status: common.TopUpStatusSuccess, CreateTime: 3000},
+		{UserId: 9202, Amount: 400, Money: 40, TradeNo: "TS4", Status: common.TopUpStatusFailed, CreateTime: 4000},
+	}
+	require.NoError(t, DB.Create(&topups).Error)
+
+	tests := []struct {
+		name    string
+		filters TopUpFilters
+		want    TopUpStats
+	}{
+		{
+			name:    "no filters aggregates all rows, money/amount only success",
+			filters: TopUpFilters{},
+			want: TopUpStats{
+				TotalCount:   4,
+				SuccessCount: 2,
+				TotalMoney:   40,  // TS1(10) + TS3(30)
+				TotalAmount:  400, // TS1(100) + TS3(300)
+			},
+		},
+		{
+			name:    "username filters before aggregating",
+			filters: TopUpFilters{Username: "topupstats_bob"},
+			want: TopUpStats{
+				TotalCount:   2,
+				SuccessCount: 1,
+				TotalMoney:   30,
+				TotalAmount:  300,
+			},
+		},
+		{
+			name:    "status filter narrows both count and totals",
+			filters: TopUpFilters{Status: common.TopUpStatusFailed},
+			want: TopUpStats{
+				TotalCount:   1,
+				SuccessCount: 0,
+				TotalMoney:   0,
+				TotalAmount:  0,
+			},
+		},
+		{
+			name:    "unmatched filter returns all-zero stats, not an error",
+			filters: TopUpFilters{Username: "topupstats_nobody"},
+			want:    TopUpStats{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetTopUpStats(tt.filters)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
