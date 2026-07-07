@@ -27,6 +27,7 @@ import {
   ListTodo,
   MessageSquare,
   Radio,
+  Receipt,
   ServerCog,
   Settings,
   Ticket,
@@ -143,6 +144,11 @@ export function useSidebarData(): SidebarData {
             title: t('Subscriptions'),
             url: '/subscriptions',
             icon: CreditCard,
+          },
+          {
+            title: t('Topup Statistics'),
+            url: '/topup-stats',
+            icon: Receipt,
           },
           {
             title: t('System Info'),
