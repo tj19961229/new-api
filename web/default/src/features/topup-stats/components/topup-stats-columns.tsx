@@ -33,7 +33,7 @@ const STATUS_VARIANT: Record<string, StatusVariant> = {
 
 const STATUS_LABEL: Record<string, string> = {
   success: 'Success',
-  pending: 'Pending',
+  pending: 'Awaiting Payment',
   failed: 'Failed',
   expired: 'Expired',
 }

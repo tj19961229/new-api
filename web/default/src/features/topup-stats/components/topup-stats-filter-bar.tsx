@@ -33,7 +33,7 @@ import { topUpStatusValues, type TopUpStatus } from '../types'
 
 const STATUS_OPTIONS = [
   { value: 'success', labelKey: 'Success' },
-  { value: 'pending', labelKey: 'Pending' },
+  { value: 'pending', labelKey: 'Awaiting Payment' },
   { value: 'failed', labelKey: 'Failed' },
   { value: 'expired', labelKey: 'Expired' },
 ] as const

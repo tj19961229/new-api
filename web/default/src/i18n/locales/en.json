@@ -5073,6 +5073,7 @@
     "Completed At": "Completed At",
     "No Topup Records Found": "No Topup Records Found",
     "No topup records match the current filters.": "No topup records match the current filters.",
-    "Failed to load topup records": "Failed to load topup records"
+    "Failed to load topup records": "Failed to load topup records",
+    "Awaiting Payment": "Awaiting Payment"
   }
 }

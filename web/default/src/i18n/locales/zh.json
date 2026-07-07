@@ -5073,6 +5073,7 @@
     "Completed At": "完成时间",
     "No Topup Records Found": "暂无充值记录",
     "No topup records match the current filters.": "没有符合当前筛选条件的充值记录。",
-    "Failed to load topup records": "加载充值记录失败"
+    "Failed to load topup records": "加载充值记录失败",
+    "Awaiting Payment": "待支付"
   }
 }
