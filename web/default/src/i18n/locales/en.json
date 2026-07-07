@@ -5057,6 +5057,23 @@
     "Zero retention": "Zero retention",
     "Zhipu": "Zhipu",
     "Zhipu V4": "Zhipu V4",
-    "Zoom": "Zoom"
+    "Zoom": "Zoom",
+    "Topup Statistics": "Topup Statistics",
+    "Filter by trade no...": "Filter by trade no...",
+    "Min Paid Amount": "Min Paid Amount",
+    "Max Paid Amount": "Max Paid Amount",
+    "Min Credited Quota": "Min Credited Quota",
+    "Max Credited Quota": "Max Credited Quota",
+    "Success Count": "Success Count",
+    "Total Paid Amount": "Total Paid Amount",
+    "Total Credited Quota": "Total Credited Quota",
+    "Trade No": "Trade No",
+    "Credited Quota": "Credited Quota",
+    "Paid Amount": "Paid Amount",
+    "Completed At": "Completed At",
+    "No Topup Records Found": "No Topup Records Found",
+    "No topup records match the current filters.": "No topup records match the current filters.",
+    "Failed to load topup records": "Failed to load topup records",
+    "Awaiting Payment": "Awaiting Payment"
   }
 }
