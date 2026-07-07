@@ -462,17 +462,56 @@ func GetUserTopUps(c *gin.Context) {
 	common.ApiSuccess(c, pageInfo)
 }
 
+// parseTopUpFilters 从 query 参数解析充值记录的多维度筛选条件。
+func parseTopUpFilters(c *gin.Context) model.TopUpFilters {
+	filters := model.TopUpFilters{
+		Keyword:  c.Query("keyword"),
+		Username: c.Query("username"),
+		Status:   c.Query("status"),
+	}
+	if v, err := strconv.ParseInt(c.Query("start_timestamp"), 10, 64); err == nil {
+		filters.StartTimestamp = v
+	}
+	if v, err := strconv.ParseInt(c.Query("end_timestamp"), 10, 64); err == nil {
+		filters.EndTimestamp = v
+	}
+	if v, err := strconv.ParseInt(c.Query("min_amount"), 10, 64); err == nil {
+		filters.MinAmount = v
+	}
+	if v, err := strconv.ParseInt(c.Query("max_amount"), 10, 64); err == nil {
+		filters.MaxAmount = v
+	}
+	if v, err := strconv.ParseFloat(c.Query("min_money"), 64); err == nil {
+		filters.MinMoney = v
+	}
+	if v, err := strconv.ParseFloat(c.Query("max_money"), 64); err == nil {
+		filters.MaxMoney = v
+	}
+	return filters
+}
+
+// hasNewTopUpFilter 判断除 keyword 外是否还带了任何新增的筛选维度。
+func hasNewTopUpFilter(filters model.TopUpFilters) bool {
+	return filters.Username != "" || filters.Status != "" ||
+		filters.StartTimestamp != 0 || filters.EndTimestamp != 0 ||
+		filters.MinAmount != 0 || filters.MaxAmount != 0 ||
+		filters.MinMoney != 0 || filters.MaxMoney != 0
+}
+
 // GetAllTopUps 管理员获取全平台充值记录
 func GetAllTopUps(c *gin.Context) {
 	pageInfo := common.GetPageQuery(c)
 	keyword := c.Query("keyword")
+	filters := parseTopUpFilters(c)
 
 	var (
 		topups []*model.TopUp
 		total  int64
 		err    error
 	)
-	if keyword != "" {
+	if hasNewTopUpFilter(filters) {
+		topups, total, err = model.SearchAllTopUpsWithFilters(filters, pageInfo)
+	} else if keyword != "" {
 		topups, total, err = model.SearchAllTopUps(keyword, pageInfo)
 	} else {
 		topups, total, err = model.GetAllTopUps(pageInfo)
@@ -485,6 +524,16 @@ func GetAllTopUps(c *gin.Context) {
 	pageInfo.SetTotal(int(total))
 	pageInfo.SetItems(topups)
 	common.ApiSuccess(c, pageInfo)
+}
+
+// GetTopUpStats 管理员按筛选条件获取充值记录汇总统计
+func GetTopUpStats(c *gin.Context) {
+	stats, err := model.GetTopUpStats(parseTopUpFilters(c))
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, stats)
 }
 
 type AdminCompleteTopupRequest struct {
