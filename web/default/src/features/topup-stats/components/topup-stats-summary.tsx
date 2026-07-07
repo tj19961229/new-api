@@ -59,8 +59,14 @@ export function TopUpStatsSummary(props: TopUpStatsSummaryProps) {
   const { data, isLoading } = useQuery({
     queryKey: ['topup-stats-summary', props.params],
     queryFn: async () => {
-      const result = await getTopUpStats(props.params)
-      return result.success ? (result.data ?? DEFAULT_STATS) : DEFAULT_STATS
+      try {
+        const result = await getTopUpStats(props.params)
+        return result.success ? (result.data ?? DEFAULT_STATS) : DEFAULT_STATS
+      } catch {
+        // ponytail: axios interceptor already toasts the error; fall back to
+        // DEFAULT_STATS so `data` stays defined and the skeleton doesn't hang forever.
+        return DEFAULT_STATS
+      }
     },
     placeholderData: (previousData) => previousData,
   })
